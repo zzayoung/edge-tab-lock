@@ -1,0 +1,18 @@
+{
+  "manifest_version": 3,
+  "name": "Edge Tab Lock",
+  "description": "Bring back tab locking in Microsoft Edge. Protect selected tabs from Ctrl+W and middle-click.",
+  "version": "0.2.0",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEApDfvBWxGWWVwuEGs08iPRdNGLdYWKKb/YzVp1WeABDDHnxGnWqC3rQGNkPOYVAn3B34S9u46AqTOnqIi6OM4asQ44qD5ajN10EG7z/zLwX3jL1tBrWRXLA79/BNn9S8+zwp+ZcBkHYz1GYQyt84Hxck6NA3Jj/xfbZD+1w5natK2Ji3rbCMPoOXKQ6ENcN79CuRZr0FPeHQ2D2Zq+DH6kzybT9xhsP4EJaw+Mh3gIqJ7XnbQuGoWkUT4prEeevn+9GwAud0Cae9Lv3whcoRHkasW3TeWloF+W3y3sBdBj8kvvJEtAaOiMmqm1QXugyl9611CpeKW1pqZn/nt8Mn2qQIDAQAB",
+  "permissions": [
+    "contextMenus",
+    "nativeMessaging",
+    "tabs"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "Connecting to Edge Tab Lock helper"
+  }
+}
