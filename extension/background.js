@@ -1,3 +1,4 @@
+const chinese = chrome.i18n.getUILanguage().startsWith('zh');
 const locked = new Set();
 const pinnedByLock = new Set();
 const active = new Map();
@@ -5,23 +6,23 @@ let focused = chrome.windows.WINDOW_ID_NONE;
 let port;
 let ready = false;
 let syncVersion = 0;
-const chinese = chrome.i18n.getUILanguage().startsWith('zh');
+let retryDelay = 500;
 
 async function sync() {
   const version = ++syncVersion;
   const tabId = active.get(focused);
-  if (port) port.postMessage({ protect: locked.has(tabId) });
+  if (ready) port.postMessage({ protect: locked.has(tabId) });
   if (tabId !== undefined) {
-    chrome.action.setBadgeText({ tabId, text: locked.has(tabId) ? (ready ? '🔒' : '!') : '' });
-    chrome.action.setBadgeBackgroundColor({ tabId, color: '#1769aa' });
+    chrome.action.setBadgeText({ tabId, text: locked.has(tabId) ? (ready ? '🔒' : '!') : '' }).catch(() => {});
+    chrome.action.setBadgeBackgroundColor({ tabId, color: '#1769aa' }).catch(() => {});
   }
-  if (!port) return;
+  if (!ready) return;
   if (!locked.size || focused === chrome.windows.WINDOW_ID_NONE) {
     port.postMessage({ tabs: [] });
     return;
   }
   const tabs = await chrome.tabs.query({ windowId: focused }).catch(() => []);
-  if (version === syncVersion && port) {
+  if (version === syncVersion && ready) {
     port.postMessage({ tabs: tabs.map(tab => [tab.title ?? '', locked.has(tab.id)]) });
   }
 }
@@ -36,10 +37,13 @@ async function connect() {
     ready = false;
     chrome.action.setTitle({ title: chinese ? '标签保护未连接，请检查本机辅助程序' : 'Edge Tab Lock helper disconnected' });
     sync();
+    setTimeout(connect, retryDelay);
+    retryDelay = Math.min(retryDelay * 2, 10000);
   });
   port.onMessage.addListener(message => {
     if (message.ready) {
       ready = true;
+      retryDelay = 500;
       chrome.action.setTitle({ title: chinese ? '标签保护已连接' : 'Edge Tab Lock helper connected' });
       sync();
     }
@@ -57,6 +61,11 @@ chrome.runtime.onInstalled.addListener(async () => {
   chrome.contextMenus.create({ id: 'lock', title: chinese ? '锁定标签，保留标题' : 'Lock tab and keep title', contexts: ['tab'] });
   chrome.contextMenus.create({ id: 'lock-and-pin', title: chinese ? '锁定并固定标签，隐藏 ×' : 'Lock and pin tab (hide ×)', contexts: ['tab'] });
   chrome.contextMenus.create({ id: 'unlock', title: chinese ? '解除标签锁定' : 'Unlock tab', contexts: ['tab'] });
+});
+chrome.runtime.onMessage.addListener((message, _sender, respond) => {
+  if (message === 'tab-protection-status') {
+    respond({ locked: [...locked], ready });
+  }
 });
 chrome.contextMenus.onClicked.addListener(async (info, tab) => {
   if (info.menuItemId === 'lock') locked.add(tab.id);

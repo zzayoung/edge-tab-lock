@@ -14,10 +14,10 @@ Edge Tab Lock 把「右键锁定标签页」带回 Windows 版 Microsoft Edge。
 
 需要 64 位 Windows、桌面版 Microsoft Edge 和 64 位 Python 3。辅助程序安装在当前 Windows 用户下，无需管理员权限或额外的 Python 包。
 
-1. 下载发布页的 **edge-tab-lock-v0.2.0.zip**，解压到可以长期保留的目录。
+1. 下载发布页的 **edge-tab-lock-v0.2.4.zip**，解压到可以长期保留的目录。
 2. 在解压目录打开 PowerShell，运行 `./install.ps1`。如果找不到 Python，可以运行 `./install.ps1 -PythonExe 'C:\path\to\python.exe'`。Python 和辅助程序安装路径须使用 ASCII 字符。如果 Windows 用户目录含中文，用 `-InstallDirectory` 指定可写的英文路径。
 3. 在日常使用的 Edge 配置中打开 `edge://extensions/`，开启「开发人员模式」，点击「加载解压缩的扩展」，选择解压出来的 **extension** 文件夹。已安装的用户在安装辅助程序后可到扩展卡片重新加载。如果目录变了，选择新目录加载。
-4. 在标签上右键选择锁定方式。可把扩展固定到工具栏，选中已锁定的标签时会显示 **🔒**。若显示 **!**，说明辅助程序未连接。
+4. 在标签上右键选择锁定方式。点击扩展菜单中的 **Edge Tab Lock**，查看当前窗口哪些标签已锁定、仅固定或同时锁定并固定。把扩展固定到工具栏后，选中已锁定的标签时会显示 **🔒**。若显示 **!**，说明辅助程序未连接。
 
 ## 常见问题
 

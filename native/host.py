@@ -11,6 +11,8 @@ from uuid import UUID
 user = c.WinDLL('user32', use_last_error=True)
 kernel = c.WinDLL('kernel32', use_last_error=True)
 user.GetForegroundWindow.restype = w.HWND
+user.SetThreadDpiAwarenessContext.argtypes = [c.c_void_p]
+user.SetThreadDpiAwarenessContext.restype = c.c_void_p
 user.GetWindowThreadProcessId.argtypes = [w.HWND, c.POINTER(w.DWORD)]
 kernel.OpenProcess.argtypes = [w.DWORD, w.BOOL, w.DWORD]
 kernel.OpenProcess.restype = w.HANDLE
@@ -35,6 +37,7 @@ automation.SysFreeString.argtypes = [c.c_void_p]
 
 protected = False
 tabs = []
+middle_press_blocked = False
 thread_id = kernel.GetCurrentThreadId()
 mouse_checks = queue.Queue(maxsize=1)
 
@@ -65,7 +68,14 @@ def release(obj):
     com_call(obj, 2, w.ULONG, ())
 
 
+def title_matches(title, label):
+    # Edge can append memory usage and other status text to accessible names.
+    return bool(title) and (label == title or label.startswith(title + ' - '))
+
+
 def check_mouse():
+    # Match the physical screen coordinates reported by the low-level mouse hook.
+    user.SetThreadDpiAwarenessContext(-4)  # DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2
     ole.CoInitializeEx(None, 0)
     clsid = c.create_string_buffer(UUID('ff48dba4-60ef-4201-aa87-54103eef594e').bytes_le)
     iid = c.create_string_buffer(UUID('30cbe57d-d9d0-452a-ab13-7ac5ac4825ee').bytes_le)
@@ -91,6 +101,13 @@ def check_mouse():
                 if name == 'EdgeTab':
                     hit = element
                 if name == 'EdgeTabStrip' and hit:
+                    label = element_text(hit, 23)  # CurrentName
+                    candidates = [locked for title, locked in snapshot if title_matches(title, label)]
+                    if len(candidates) == 1 and all(title for title, _ in snapshot):
+                        blocked = candidates[0]
+                        break
+
+                    # Tabs with the same title need position and element identity.
                     items = com_get(element, 6, c.c_void_p, (c.c_int, 4), (c.c_void_p, condition))
                     elements.append(items)
                     if com_get(items, 3, c.c_int) != len(snapshot):
@@ -98,8 +115,7 @@ def check_mouse():
                     for index, (title, locked) in enumerate(snapshot):
                         item = com_get(items, 4, c.c_void_p, (c.c_int, index))
                         elements.append(item)
-                        label = element_text(item, 23)  # CurrentName includes Edge status suffixes.
-                        if title and label != title and not label.startswith(title + ' - '):
+                        if title and not title_matches(title, element_text(item, 23)):
                             blocked = False
                             break
                         if locked and com_get(uia, 3, w.BOOL, (c.c_void_p, item), (c.c_void_p, hit)):
@@ -156,13 +172,19 @@ def hook(code, message, ptr):
 
 @HOOK
 def mouse_hook(code, message, ptr):
+    global middle_press_blocked
+    if code == 0 and message == 0x0208:
+        if middle_press_blocked:
+            middle_press_blocked = False
+            return 1
     snapshot = tabs
-    if code == 0 and message == 0x0208 and any(locked for _, locked in snapshot) and foreground_edge():
+    if code == 0 and message == 0x0207 and any(locked for _, locked in snapshot) and foreground_edge():
         point = w.POINT.from_buffer_copy(c.string_at(ptr, c.sizeof(w.POINT)))
         response = queue.Queue(maxsize=1)
         try:
             mouse_checks.put_nowait((point, snapshot, response))
             if response.get(timeout=0.15):
+                middle_press_blocked = True
                 return 1
         except (queue.Full, queue.Empty):
             pass

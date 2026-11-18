@@ -14,10 +14,10 @@
 
 Requires desktop Microsoft Edge on **64-bit Windows** and **64-bit Python 3**. The helper runs under your Windows account, with no administrator install or Python packages needed.
 
-1. Download **edge-tab-lock-v0.2.0.zip** from Releases and extract it to a folder you can keep.
+1. Download **edge-tab-lock-v0.2.4.zip** from Releases and extract it to a folder you can keep.
 2. Open PowerShell in the extracted folder and run `./install.ps1`. This installs and registers the local helper for your Windows account. If Python isn't found, use `./install.ps1 -PythonExe 'C:\path\to\python.exe'`. The Python and helper installation paths must use ASCII characters. If your Windows user folder contains non-ASCII characters, pass a writable ASCII path with `-InstallDirectory`.
 3. In your everyday Edge profile, open `edge://extensions/`, enable **Developer mode**, and use **Load unpacked** to select the extracted **extension** folder. If upgrading an existing installation, reload the extension from its card after installing the helper, or load the new folder if its location changed.
-4. Right-click a tab and choose a lock action. Open the Extensions menu to see the status, or pin **Edge Tab Lock** to the toolbar for a visible **🔒** badge on the active locked tab. A **!** badge means the helper is disconnected.
+4. Right-click a tab and choose a lock action. Click **Edge Tab Lock** in the Extensions menu to see which tabs in the current window are locked, pinned, or both. Pin the extension to the toolbar to see a **🔒** badge on the active locked tab. A **!** badge means the helper is disconnected.
 
 ## Frequently asked questions
 

@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<title>Edge Tab Lock</title>
+<style>
+  :root { color-scheme: light dark; font: 13px/1.45 system-ui, sans-serif; }
+  body { width: 350px; margin: 0; color: CanvasText; background: Canvas; }
+  header { padding: 14px 16px 10px; }
+  h1 { font-size: 15px; margin: 0; }
+  p { margin: 6px 0 0; }
+  ul { list-style: none; margin: 0; padding: 0 8px 8px; max-height: 340px; overflow: auto; }
+  button {
+    appearance: none; cursor: pointer; width: 100%; display: flex; align-items: center;
+    gap: 8px; text-align: start; color: inherit; background: transparent;
+    border: 1px solid transparent; border-radius: 6px; padding: 8px; font: inherit;
+  }
+  button:hover, button:focus-visible { background: color-mix(in srgb, CanvasText 9%, Canvas); }
+  button[aria-current="true"] { border-color: color-mix(in srgb, CanvasText 24%, Canvas); }
+  .title { flex: 1; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+  .status { flex-shrink: 0; font-size: 12px; }
+</style>
+<header>
+  <h1>Tabs in this window</h1>
+  <p id="notice" role="status">Loading tab status…</p>
+</header>
+<ul id="tabs" aria-label="Tab list"></ul>
+<script src="popup.js" defer></script>
+</html>
